@@ -1,8 +1,9 @@
 <p align="center">
-<a href="https://tesseract.projectnaptha.com/"><img alt="Tesseract.js" src="https://tesseract.projectnaptha.com/img/logo_small.png"></a>
+<a href="https://tesseract.projectnaptha.com/"><img width="256px" height="256px" alt="Tesseract.js" src="./docs/images/tesseract.png"></a>
 </p>
 
 [![Build Status](https://travis-ci.org/naptha/tesseract.js.svg?branch=master)](https://travis-ci.org/naptha/tesseract.js)
+[![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://github.com/naptha/tesseract.js) 
 [![Financial Contributors on Open Collective](https://opencollective.com/tesseractjs/all/badge.svg?label=financial+contributors)](https://opencollective.com/tesseractjs) [![npm version](https://badge.fury.io/js/tesseract.js.svg)](https://badge.fury.io/js/tesseract.js)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/naptha/tesseract.js/graphs/commit-activity)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
@@ -11,7 +12,7 @@
 [![Downloads Month](https://img.shields.io/npm/dm/tesseract.js.svg)](https://www.npmjs.com/package/tesseract.js)
 
 <h3 align="center">
-  Version 2 is now available and under development in the master branch<br>
+  Version 2 is now available and under development in the master branch, read a story about v2: <a href="https://medium.com/@jeromewus/why-i-refactor-tesseract-js-v2-50f750a9cfe2">Why I refactor tesseract.js v2?</a><br>
   Check the <a href="https://github.com/naptha/tesseract.js/tree/support/1.x">support/1.x</a> branch for version 1
 </h3>
 
@@ -19,32 +20,61 @@
 
 Tesseract.js is a javascript library that gets words in [almost any language](./docs/tesseract_lang_list.md) out of images. ([Demo](http://tesseract.projectnaptha.com/))
 
+Image Recognition
+
 [![fancy demo gif](./docs/images/demo.gif)](http://tesseract.projectnaptha.com)
+
+Video Real-time Recognition
+
+<p align="center">
+  <a href="https://github.com/jeromewu/tesseract.js-video"><img alt="Tesseract.js Video" src="./docs/images/video-demo.gif"></a>
+</p>
+
 
 Tesseract.js wraps an [emscripten](https://github.com/kripken/emscripten) [port](https://github.com/naptha/tesseract.js-core) of the [Tesseract](https://github.com/tesseract-ocr/tesseract) [OCR](https://en.wikipedia.org/wiki/Optical_character_recognition) Engine.
 It works in the browser using [webpack](https://webpack.js.org/) or plain script tags with a [CDN](#CDN) and on the server with [Node.js](https://nodejs.org/en/).
 After you [install it](#installation), using it is as simple as:
 
 ```javascript
-import { TesseractWorker } from 'tesseract.js';
-const worker = new TesseractWorker();
+import Tesseract from 'tesseract.js';
 
-worker.recognize(myImage)
-  .progress(progress => {
-    console.log('progress', progress);
-  }).then(result => {
-    console.log('result', result);
-  });
+Tesseract.recognize(
+  'https://tesseract.projectnaptha.com/img/eng_bw.png',
+  'eng',
+  { logger: m => console.log(m) }
+).then(({ data: { text } }) => {
+  console.log(text);
+})
+```
+
+Or more imperative
+
+```javascript
+import { createWorker } from 'tesseract.js';
+
+const worker = createWorker({
+  logger: m => console.log(m)
+});
+
+(async () => {
+  await worker.load();
+  await worker.loadLanguage('eng');
+  await worker.initialize('eng');
+  const { data: { text } } = await worker.recognize('https://tesseract.projectnaptha.com/img/eng_bw.png');
+  console.log(text);
+  await worker.terminate();
+})();
 ```
 
 [Check out the docs](#docs) for a full explanation of the API.
 
 
 ## Major changes in v2
-- Upgrade to tesseract v4
-- Support multiple languages at the same time, eg: eng+chi_tra for English and Traditional Chinese
+- Upgrade to tesseract v4.1 (using emscripten 1.38.45)
+- Support multiple languages at the same time, eg: eng+chi\_tra for English and Traditional Chinese
 - Supported image formats: png, jpg, bmp, pbm
 - Support WebAssembly (fallback to ASM.js when browser doesn't support)
+- Support Typescript
 
 
 ## Installation
@@ -54,7 +84,7 @@ Tesseract.js works with a `<script>` tag via local copy or CDN, with webpack via
 ### CDN
 ```html
 <!-- v2 -->
-<script src='https://unpkg.com/tesseract.js@v2.0.0-alpha.13/dist/tesseract.min.js'></script>
+<script src='https://unpkg.com/tesseract.js@v2.0.1/dist/tesseract.min.js'></script>
 
 <!-- v1 -->
 <script src='https://unpkg.com/tesseract.js@1.0.19/src/index.js'></script>
@@ -68,12 +98,12 @@ After including the script the `Tesseract` variable will be globally available.
 
 ```shell
 # For v2
-npm install tesseract.js@next
-yarn add tesseract.js@next
-
-# For v1
 npm install tesseract.js
 yarn add tesseract.js
+
+# For v1
+npm install tesseract.js@1
+yarn add tesseract.js@1
 ```
 
 
@@ -85,6 +115,17 @@ yarn add tesseract.js
 * [Local Installation](./docs/local-installation.md)
 * [FAQ](./docs/faq.md)
 
+## Use tesseract.js the way you like!
+
+- Offline Version: https://github.com/jeromewu/tesseract.js-offline
+- Electron Version: https://github.com/jeromewu/tesseract.js-electron
+- Custom Traineddata: https://github.com/jeromewu/tesseract.js-custom-traineddata
+- Chrome Extension: https://github.com/jeromewu/tesseract.js-chrome-extension
+- With Vue: https://github.com/jeromewu/tesseract.js-vue-app
+- With Angular: https://github.com/jeromewu/tesseract.js-angular-app
+- With React: https://github.com/jeromewu/tesseract.js-react-app
+- Typescript: https://github.com/jeromewu/tesseract.js-typescript
+- Video Real-time Recognition: https://github.com/jeromewu/tesseract.js-video
 
 ## Contributing
 
@@ -103,9 +144,11 @@ npm start
 ```
 
 The development server will be available at http://localhost:3000/examples/browser/demo.html in your favorite browser.
-It will automatically rebuild `tesseract.dev.js` and `worker.min.js` when you change files in the src folder.
+It will automatically rebuild `tesseract.dev.js` and `worker.dev.js` when you change files in the **src** folder.
 
-You can also run the development server in Gitpod ( a free online IDE and dev environment for GitHub that will automate your dev setup ) with a single click.
+### Online Setup with a single Click
+
+You can use Gitpod(A free online VS Code like IDE) for contributing. With a single click it will launch a ready to code workspace with the build & start scripts already in process and within a few seconeds it will spin up the dev server so that you can start contributing straight away without wasting any time. 
 
 [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/naptha/tesseract.js/blob/master/examples/browser/demo.html)
 

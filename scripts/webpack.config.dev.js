@@ -1,5 +1,6 @@
 const path = require('path');
 const webpack = require('webpack');
+const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 const common = require('./webpack.config.common');
 
 const genConfig = ({
@@ -19,9 +20,14 @@ const genConfig = ({
         TESS_ENV: JSON.stringify('development'),
       },
     }),
+    new BundleAnalyzerPlugin({
+      analyzerMode: 'disable',
+      statsFilename: `${filename.split('.')[0]}-stats.json`,
+      generateStatsFile: true
+    }),
   ],
   devServer: {
-      allowedHosts: ['localhost', '.gitpod.io'],
+    allowedHosts: ['localhost', '.gitpod.io'],
   },
 });
 
@@ -33,7 +39,7 @@ module.exports = [
     libraryTarget: 'umd',
   }),
   genConfig({
-    entry: path.resolve(__dirname, '..', 'src', 'browser', 'worker.js'),
+    entry: path.resolve(__dirname, '..', 'src', 'worker-script', 'browser', 'index.js'),
     filename: 'worker.dev.js',
   }),
 ];
